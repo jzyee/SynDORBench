@@ -1,0 +1,6 @@
+# remove the prototype folder
+prototype/*
+
+*env/*
+
+*.log
