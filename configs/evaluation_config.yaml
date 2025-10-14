@@ -1,0 +1,37 @@
+# ===============================
+# SynDORBench Evaluation Config
+# ===============================
+
+# Directory for dataset root
+dataset_root: /mnt/harddisk/jeremy/synthetic_dataset_output/SynDORBench/
+
+# Directory for saving results
+output_root: ./results/
+
+# List of models to evaluate
+models:
+  - name: llavaction
+    config: ./configs/llavaction_config.yaml
+  # - name: internvl3
+  #   config: ./configs/model_internvl3.yaml
+  # - name: molmo
+  #   config: ./configs/model_molmo.yaml
+
+# Dataset tasks to run on
+datasets:
+  - name: human_detection_day
+    path: index/human_detection/day.jsonl
+    metrics:
+      - accuracy
+  - name: action_recognition_night
+    path: index/action_recognition/night.jsonl
+    metrics:
+      - rouge_l
+  - name: action_recognition_nv
+    path: index/action_recognition/nv.jsonl
+    metrics:
+      - rouge_l
+
+dataset_limit: 2 # Limit number of samples per dataset for quick testing, set to -1 for no limit
+
+

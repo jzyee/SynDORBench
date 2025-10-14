@@ -7,7 +7,7 @@ requires:
 
 
 '''
-from models.base import BaseModel
+from eval.models.base import BaseModel
 from llavaction.model.builder import load_pretrained_model
 import torch
 from llavaction.conversation import conv_templates, SeparatorStyle
@@ -32,6 +32,7 @@ class LLavaAction(BaseModel):
                                                                             self.model_name, 
                                                                             torch_dtype=self.dtype, 
                                                                             device_map=self.device_map,
+                                                                            # vision_tower=self.config.vision_tower,
                                                                             quantization_config=self.config.extra_args.get("quantization_config", None)
                                                                             )
         # tokenizer = AutoTokenizer.from_pretrained(self.model_path, use_fast=False)

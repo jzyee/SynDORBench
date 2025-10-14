@@ -1,0 +1,9 @@
+model:
+  "name": "llavaction" # model identifier
+  "model_name": "llava_qwen" # architecture name
+  "model_path": "/mnt/harddisk/jeremy/models/MLAdaptiveIntelligence/LLaVAction-7B"
+  "max_new_tokens": 512
+  "temperature": 0
+  "device": "cuda"
+  "device_map": {"": "cuda"}
+  "dtype": "bfloat16"

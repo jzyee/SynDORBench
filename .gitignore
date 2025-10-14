@@ -4,3 +4,5 @@ prototype/*
 *env/*
 
 *.log
+
+*__pycache__*
