@@ -6,5 +6,6 @@ prototype/*
 *.log
 
 # ignore Python cache files
-*__pycache__*
-*.pyc
+__pycache__/
+**/__pycache__/
+*.py[cod]
