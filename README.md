@@ -6,6 +6,19 @@ pip install open-clip-torch
 pip install transformers==4.40.1 --force-reinstall
 pip install flash-attn --no-build-isolation --no-cache-dir
 
+
+# models
+
+- HuggingFaceTB/SmolVLM-Instruct (2B)
+- deepseek-ai/deepseek-vl2-tiny (3B)
+- microsoft/Phi-4-multimodal-instruct (5B)
+- MLAdaptiveIntelligence/LLaVAction-7B // done
+- Qwen/Qwen2.5-VL-7B-Instruct (7B)
+- allenai/Molmo-7B-D-0924 (7B)
+- lmms-lab/LLaVA-NeXT-Video-7B (7B) 
+- ICTNLP/llava-mini-llama-3.1-8b (8B)
+- OpenGVLab/InternVL3_5-8B (8B)
+
 # Example 
 
 ## To run a single evaluation
