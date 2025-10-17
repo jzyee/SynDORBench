@@ -10,10 +10,10 @@ output_root: ./results/
 
 # List of models to evaluate
 models:
-  - name: llavaction
-    config: ./configs/llavaction_config.yaml
-  # - name: internvl3
-  #   config: ./configs/model_internvl3.yaml
+  # - name: llavaction
+  #   config: ./configs/llavaction_config.yaml
+  - name: llava_mini
+    config: ./configs/llavamini_config.yaml
   # - name: molmo
   #   config: ./configs/model_molmo.yaml
 

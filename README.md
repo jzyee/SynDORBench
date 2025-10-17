@@ -16,8 +16,9 @@ pip install flash-attn --no-build-isolation --no-cache-dir
 - Qwen/Qwen2.5-VL-7B-Instruct (7B)
 - allenai/Molmo-7B-D-0924 (7B)
 - lmms-lab/LLaVA-NeXT-Video-7B (7B) 
-- ICTNLP/llava-mini-llama-3.1-8b (8B) // midway
-- OpenGVLab/InternVL3_5-8B (8B)
+https://huggingface.co/docs/transformers/model_doc/llava_next?usage=AutoModel
+- ICTNLP/llava-mini-llama-3.1-8b (8B) // midway #scrapping too unsable
+- OpenGVLab/InternVL3_5-8B (8B) // looks easy enough
 
 # Example 
 

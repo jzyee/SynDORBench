@@ -21,6 +21,9 @@ def get_model_class(name: str):
     name = name.lower()
     if "llavaction" in name:
         return LLavaAction
+    if "llava_mini" in name or "llava-mini" in name:
+        from eval.models.llava_mini import LLavaMini
+        return LLavaMini
     # elif "internvl3" in name:
     #     return InternVL3
     # elif "molmo" in name:
