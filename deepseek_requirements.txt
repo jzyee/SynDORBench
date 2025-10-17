@@ -1,0 +1,35 @@
+# This environment is isolated due to compatibility requirements
+# with specific versions of transformers and the DeepSeek-VL2 library.
+
+# ============================================================
+# Install in this sequence:
+# Install with CUDA 11.8: pip install torch==2.0.1 torchvision==0.15.2 --index-url https://download.pytorch.org/whl/cu118 FIRST
+# xformers==0.0.22 SECOND (depends on torch)
+# numpy<2.0 THIRD
+# Everything else after
+# ============================================================
+
+python=3.11
+
+# Core Deep Learning Framework
+# Install with CUDA 11.8: pip install torch==2.0.1 torchvision==0.15.2 --index-url https://download.pytorch.org/whl/cu118
+#Needs torch==2.0.1
+#Needs torchvision==0.15.2
+
+# xformers for efficient attention (requires torch==2.0.1)
+xformers==0.0.22
+
+# NumPy (MUST be <2.0 for compatibility)
+numpy<2
+
+# DeepSeek-VL2 (install from GitHub)
+# Run: pip install git+https://github.com/deepseek-ai/DeepSeek-VL2.git
+git+https://github.com/deepseek-ai/DeepSeek-VL2.git
+
+# Transformers & HuggingFace
+transformers>=4.37.0
+accelerate>=0.20.0
+huggingface-hub>=0.16.0
+
+
+
