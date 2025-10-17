@@ -1,0 +1,19 @@
+model:
+  name: "smolvlm"
+  model_name: "smolvlm-instruct"
+  model_path: "HuggingFaceTB/SmolVLM-Instruct"
+  max_new_tokens: 512
+  temperature: 0
+  top_p: 1.0
+  device: "cuda"
+  device_map: "auto"
+  dtype: "bfloat16"
+  seed: 42
+  batch_size: 1
+
+dataset:
+  root: ""  # Set your dataset root
+  path: "index/human_detection/day.jsonl"
+
+output:
+  save_path: "./results/smolvlm_results.jsonl"
