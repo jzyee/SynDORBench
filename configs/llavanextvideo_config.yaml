@@ -1,0 +1,16 @@
+model:
+  "name": "llava_next_video" # model identifier
+  "model_name": "llava_next_video"
+  "model_path": "llava-hf/LLaVA-NeXT-Video-7B-hf"
+  "max_new_tokens": 512
+  "temperature": 0
+  "device": "cuda"
+  "device_map": "balanced"
+  "dtype": "bfloat16"
+
+extra_args:
+  model_kwargs:
+    low_cpu_mem_usage: true
+    max_memory:
+      0: "16GiB"
+      cpu: "20GiB"
