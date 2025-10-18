@@ -1,0 +1,3 @@
+There is a bug where the model may fail inference with an error "AttributeError: 'NoneType' object has no attribute 'size'",i have manually patched one of the cache files and added into the repo in the same area as the model,please back up the current copy of modelling_momo.py in your current system then use the one in the repo.
+.cache\huggingface\modules\transformers_modules\allenai\Molmo_hyphen_7B_hyphen_D_hyphen_0924\hash is the cache folder where the patch worked
+if not,try the other cache folder of the model

@@ -1,0 +1,15 @@
+model:
+  "name": "molmo" # model identifier
+  "model_name": "molmo"
+  "model_path": "allenai/Molmo-7B-D-0924"
+  "max_new_tokens": 256
+  "temperature": 0
+  "device": "cuda"
+  "device_map": "balanced"
+  "dtype": "bfloat16"
+
+extra_args:
+  model_kwargs:
+    max_memory:
+      0: "16GiB"
+      cpu: "20GiB"
