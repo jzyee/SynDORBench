@@ -1,0 +1,9 @@
+model:
+  "name": "molmo-7b-d-0924" # model identifier
+  "model_name": "molmo-7b-d-0924" # architecture name
+  "model_path": "allenai/Molmo-7B-d-0924"
+  "max_new_tokens": 512
+  "temperature": 0
+  "device": "cuda"
+  "device_map": None
+  "dtype": "bfloat16"

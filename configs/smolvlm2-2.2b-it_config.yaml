@@ -1,0 +1,9 @@
+model:
+  "name": "smolVLM2-2.2B" # model identifier
+  "model_name": "smolVLM2-2.2B" # architecture name
+  "model_path": "HuggingFaceTB/SmolVLM2-2.2B-Instruct"
+  "max_new_tokens": 512
+  "temperature": 0
+  "device": "cuda"
+  "device_map": None
+  "dtype": "bfloat16"

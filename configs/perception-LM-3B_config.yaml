@@ -1,0 +1,9 @@
+model:
+  "name": "perception-LM-3B" # model identifier
+  "model_name": "perception-LM-3B" # architecture name
+  "model_path": "facebook/Perception-LM-3B"
+  "max_new_tokens": 512
+  "temperature": 0
+  "device": "cuda"
+  "device_map": None
+  "dtype": "bfloat16"

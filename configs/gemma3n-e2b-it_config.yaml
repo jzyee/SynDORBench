@@ -1,0 +1,9 @@
+model:
+  "name": "gemma3n-e2b" # model identifier
+  "model_name": "gemma3n-e2b" # architecture name
+  "model_path": "google/gemma-3n-e2b-it"
+  "max_new_tokens": 512
+  "temperature": 0
+  "device": "cuda"
+  "device_map": None
+  "dtype": "bfloat16"

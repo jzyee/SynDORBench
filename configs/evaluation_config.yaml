@@ -1,0 +1,70 @@
+# ===============================
+# SynDORBench Evaluation Config
+# ===============================
+
+# wandb
+wandb_project: SynDORBench
+wandb_run_name: benchmark_run
+
+
+
+# Directory for dataset root
+dataset_root: /xxxx/SynDORBench/ #e.g xxx/xxx/SynDORBench
+
+# Directory for saving results
+output_root: ./results/
+
+# rerun inference even if output file exists
+redo: False
+
+# params for sharding dataset across multiple GPUs
+GPUs: [1,2,3]
+
+# List of models to evaluate
+models:
+  - name: internvl3-1B  
+    config: ./configs/internvl3-1b_config.yaml
+  - name: internvl3-8B  
+    config: ./configs/internvl3-8b_config.yaml
+  - name: smolVLM2-2.2B
+    config: ./configs/smolvlm2-2.2b-it_config.yaml
+
+
+
+
+# Dataset tasks to run on
+datasets:
+  - name: human_detection_day
+    path: index/human_detection/day.jsonl
+    metrics:
+      - classification_by_radius
+      - classification
+  - name: human_detection_night
+    path: index/human_detection/night.jsonl
+    metrics:
+      - classification_by_radius
+      - classification
+  - name: human_detection_nv
+    path: index/human_detection/nv.jsonl
+    metrics:
+      - classification_by_radius
+      - classification
+  - name: action_recognition_day
+    path: index/action_recognition/day.jsonl
+    metrics:
+      - e5_score
+      - e5_score_by_radius
+  - name: action_recognition_night
+    path: index/action_recognition/night.jsonl
+    metrics:
+      - e5_score
+      - e5_score_by_radius
+  - name: action_recognition_nv
+    path: index/action_recognition/nv.jsonl
+    metrics:
+      - e5_score
+      - e5_score_by_radius
+
+dataset_limit: -1 # Limit number of samples per dataset for quick testing, set to -1 for no limit
+
+

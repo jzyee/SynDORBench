@@ -1,0 +1,22 @@
+# ===============================
+# SynDORBench Task Definitions
+# ===============================
+# this config file will modify and create the subindexes 
+# for each task and the corresponding prompt to aid in evaluation. 
+
+# the dataset_root should point to the root directory where the SynDORBench dataset is stored.
+dataset_root: ""
+# the master_index should point to the master index file 
+# that contains metadata for all images in the dataset.
+master_idx_path: "index/master_index.jsonl"
+
+tasks:
+  human_detection:
+    # the task is to check for human presence in the image
+    prompt: "Respond only with 1 or 0. Respond with 1 if a person is visible in the image, and 0 if not. Is there a person visible in the image?"
+    
+
+  action_recognition:
+    # the task is to identify the action being performed by the human in the image
+    prompt: "Respond only with the name of the action. What action is the person performing in the image?"
+    

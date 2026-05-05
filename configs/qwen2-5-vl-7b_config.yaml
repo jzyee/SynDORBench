@@ -1,0 +1,9 @@
+model:
+  "name": "qwen2.5-vl-7b" # model identifier
+  "model_name": "qwen2.5-vl-7b" # architecture name
+  "model_path": "Qwen/Qwen2.5-VL-7B-Instruct"
+  "max_new_tokens": 512
+  "temperature": 0
+  "device": "cuda"
+  "device_map": None
+  "dtype": "bfloat16"

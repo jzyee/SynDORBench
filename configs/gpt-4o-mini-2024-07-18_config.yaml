@@ -1,0 +1,8 @@
+model:
+  "name": gpt-4o-mini-2024-07-18 # model identifier
+  "model_name": gpt-4o-mini-2024-07-18 # architecture name
+  "model_path": gpt-4o-mini-2024-07-18
+  "max_new_tokens": 512
+  "device": "cuda"
+  "device_map": None
+  "dtype": "bfloat16"

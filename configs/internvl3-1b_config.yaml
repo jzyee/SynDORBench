@@ -1,0 +1,9 @@
+model:
+  "name": "internvl3-1B" # model identifier
+  "model_name": "internvl3-1B" # architecture name
+  "model_path": "OpenGVLab/InternVL3-1B-hf"
+  "max_new_tokens": 512
+  "temperature": 0
+  "device": "cuda"
+  "device_map": None
+  "dtype": "bfloat16"

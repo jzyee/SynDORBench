@@ -1,0 +1,26 @@
+# remove the prototype folder
+prototype/*
+
+*env/*
+
+*.log
+
+# ignore Python cache files
+__pycache__/
+**/__pycache__/
+*.py[cod]
+
+wandb/*
+
+*.pt
+
+playground/*
+
+# eval stuff
+eval/tests/*
+eval/archive/*
+
+# misc files
+*.csv
+*.xlsx
+

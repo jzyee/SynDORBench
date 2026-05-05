@@ -1,0 +1,9 @@
+model:
+  "name": "llava_next_video" # model identifier
+  "model_name": "llava_next_video" # architecture name
+  "model_path": "llava-hf/LLaVA-NeXT-Video-7B-hf"
+  "max_new_tokens": 512
+  "temperature": 0
+  "device": "cuda"
+  "device_map": None
+  "dtype": "bfloat16"

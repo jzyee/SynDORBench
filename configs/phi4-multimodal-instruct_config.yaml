@@ -1,0 +1,9 @@
+model:
+  "name": "phi4-multimodal-instruct" # model identifier
+  "model_name": "phi4-multimodal-instruct" # architecture name
+  "model_path": "microsoft/Phi-4-multimodal-instruct"
+  "max_new_tokens": 512
+  "temperature": 0
+  "device": "cuda"
+  "device_map": None
+  "dtype": "bfloat16"

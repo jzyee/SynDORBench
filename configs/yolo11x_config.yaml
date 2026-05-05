@@ -1,0 +1,9 @@
+model:
+  "name": "yolov11" # model identifier
+  "model_name": "yolov11" # architecture name
+  "model_path": "yolo11x.pt"
+  "max_new_tokens": 512
+  "device": "cuda"
+  "device_map": None
+  "conf_thresh": 0.6
+  "iou_thresh": 0.5

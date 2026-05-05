@@ -1,0 +1,9 @@
+model:
+  "name": "smolVLM2-256M-Video-Instruct" # model identifier
+  "model_name": "smolVLM2-256M-Video-Instruct" # architecture name
+  "model_path": "HuggingFaceTB/SmolVLM2-256M-Video-Instruct"
+  "max_new_tokens": 512
+  "temperature": 0
+  "device": "cuda"
+  "device_map": None
+  "dtype": "bfloat16"
