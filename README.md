@@ -7,12 +7,12 @@
 
 
 ![Banner](imgs/SynDORBench%20banner.png)
-Figure 1. Conceptual overview of SynDORBench. The benchmark systematically varies physical visibility factors(lighting, scene type, camera azimuth/elevation, action pose) and DORI-calibrated viewing distance, evaluating the models on two tasks: 1) binary human detection and 2) open-ended action recognition
+Figure 1. Conceptual overview of SynDORBench: The benchmark systematically varies physical visibility factors (lighting, scene type, camera azimuth/elevation, action pose) and DORI-calibrated viewing distance, evaluating models on two tasks: 1) binary human-presence classification and 2) open-ended action recognition.
 
 
 # Table of Contents <!-- omit in toc -->
 
-- [About SynDORBench](#about-syndorbench)
+- [About](#about)
 - [Installation](#installation)
 - [Evaluation](#evaluation)
 - [Licence and Usage](#licence-and-usage)
@@ -20,7 +20,7 @@ Figure 1. Conceptual overview of SynDORBench. The benchmark systematically varie
 
 
 
-# About SynDORBench
+# About
 
 This repository contains the evaluation code for SynDORBench, a benchmark for studying LVLM perceptual robustness under DORI-calibrated, physically constrained camera imaging conditions. SynDORBench evaluates model performance across controlled variations in viewing distance, lighting, camera geometry, and action pose using rendered synthetic images.
 
