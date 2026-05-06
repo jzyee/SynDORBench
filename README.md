@@ -1,6 +1,6 @@
 
 
-# SynDORBench: Benchmarking Human Detection and Action Recognition with DORI-Calibrated Distances <!-- omit in toc -->
+# SynDORBench: Benchmarking LVLM Perception Against Human Visual Capability <!-- omit in toc -->
 ![Static Badge](https://img.shields.io/badge/Task-HumanDetection-red) ![Static Badge](https://img.shields.io/badge/Task-ActionRecognition-red)
 
 ![Static Badge](https://img.shields.io/badge/Dataset-SynDORBench-blue)
