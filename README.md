@@ -1,7 +1,7 @@
 
 
-# SynDORBench: Benchmarking LVLM Perception Against Human Visual Capability <!-- omit in toc -->
-![Static Badge](https://img.shields.io/badge/Task-HumanDetection-red) ![Static Badge](https://img.shields.io/badge/Task-ActionRecognition-red)
+# SynDORBench: Benchmarking LVLM Perceptual Robustness Under Physically Constrained Visibility Conditions <!-- omit in toc -->
+![Static Badge](https://img.shields.io/badge/Task-HumanClassification-red) ![Static Badge](https://img.shields.io/badge/Task-ActionRecognition-red)
 
 ![Static Badge](https://img.shields.io/badge/Dataset-SynDORBench-blue)
 
@@ -16,7 +16,7 @@ Figure 1. Conceptual overview of SynDORBench: The benchmark systematically varie
 - [Installation](#installation)
 - [Evaluation](#evaluation)
 - [Licence and Usage](#licence-and-usage)
-- [References and Citation](#references-and-citation)
+- [Citation](#citation)
 
 
 
@@ -42,43 +42,15 @@ The code is intended to evaluate SynDORBench rendered images, annotations, and m
 
 Users are responsible for complying with the original licences and terms of use of any third-party resources used with this code. Where upstream terms are more restrictive than the code-level licence, the upstream terms prevail.
 
-# References and Citation
+# Citation
 
-If you use SynDORBench, please cite SynDORBench and the following upstream resources:
+If you use SynDORBench, please cite SynDORBench:
 ```
-@inproceedings{SMPL-X:2019,
-  title = {Expressive Body Capture: {3D} Hands, Face, and Body from a Single Image},
-  author = {Pavlakos, Georgios and Choutas, Vasileios and Ghorbani, Nima and Bolkart, Timo and Osman, Ahmed A. A. and Tzionas, Dimitrios and Black, Michael J.},
-  booktitle = {Proceedings IEEE Conf. on Computer Vision and Pattern Recognition (CVPR)},
-  pages     = {10975--10985},
-  year = {2019}
+@article{yee2026syndorbench,
+  title={SynDORBench: Evaluating LVLM Perceptual Robustness Under Physically Constrained Visibility Conditions},
+  author={Yee, Jeremy Stephen Gabriel and Wang, Zhengkui and Zhang, Zhiyuan and Anand, Avinash and Liu, Timothy and Chan, Benedict and Ng, Aik Beng and See, Simon},
+  journal={arXiv preprint arXiv:2609.31823},
+  year={2026}
 }
 
-@conference{AMASS:ICCV:2019,
-  title = {{AMASS}: Archive of Motion Capture as Surface Shapes},
-  author = {Mahmood, Naureen and Ghorbani, Nima and Troje, Nikolaus F. and Pons-Moll, Gerard and Black, Michael J.},
-  booktitle = {International Conference on Computer Vision},
-  pages = {5442--5451},
-  month = oct,
-  year = {2019},
-  month_numeric = {10}
-}
-
-@inproceedings{BABEL:CVPR:2021,
-  title = {{BABEL}: Bodies, Action and Behavior with English Labels},
-  author = {Punnakkal, Abhinanda R. and Chandrasekaran, Arjun and Athanasiou, Nikos and Quiros-Ramirez, Alejandra and Black, Michael J.},
-  booktitle = {Proceedings IEEE/CVF Conf.~on Computer Vision and Pattern Recognition (CVPR)},
-  pages = {722--731},
-  month = jun,
-  year = {2021},
-  doi = {},
-  month_numeric = {6}
-}
-
-@article{casas2023smplitex,
-  title={Smplitex: A generative model and dataset for 3d human texture estimation from single image},
-  author={Casas, Dan and Comino-Trinidad, Marc},
-  journal={arXiv preprint arXiv:2309.01855},
-  year={2023}
-}
 ```
