@@ -115,7 +115,7 @@ def compute_mcq_metrics_by_radius(
 
     def _empty():
         out = {}
-        for r in radii_list:
+        for r in (radii_list or []):
             out.update({
                 f"{r}r_macro_f1": None,
                 f"{r}r_accuracy": None,
@@ -131,6 +131,16 @@ def compute_mcq_metrics_by_radius(
     if key_radius not in merged.columns:
         # Reference index has no radius column -- nothing to stratify on.
         return _empty()
+
+    # Numeric-coerce the radius column so string-typed radii from another
+    # pipeline stage (e.g. "5.4") still match the float radii_list -- mirrors
+    # the numeric coercion dev's resolve_radii() applied before the raw `==`.
+    # (Radii outside radii_list are intentionally excluded for this fixed-radii
+    # benchmark; pass radii_list=None to auto-detect every radius in the data.)
+    merged[key_radius] = pd.to_numeric(merged[key_radius], errors="coerce")
+
+    if not radii_list:
+        radii_list = sorted(merged[key_radius].dropna().unique().tolist())
 
     results = {}
     for r in radii_list:

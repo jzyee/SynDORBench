@@ -136,9 +136,11 @@ class Qwen2_5_VL(BaseModel):
         Returns (pred_letter, probs) with probs aligned to option_letters.
 
         Implemented inline (rather than via score_options_via_chat_template)
-        because Qwen2.5-VL needs process_vision_info() to materialize the
-        pixel inputs -- the generic helper's text-only apply_chat_template
-        path does not fetch the image.
+        to keep this path byte-identical to this adapter's own generate()
+        input construction (process_vision_info + processor(...)). The generic
+        helper also works here on current transformers (its apply_chat_template
+        fetches the image), but the inline form avoids depending on that
+        behaviour and on a particular transformers version.
         """
         messages = [
             {
