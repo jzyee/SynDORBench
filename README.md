@@ -24,6 +24,11 @@ Figure 1. Conceptual overview of SynDORBench: The benchmark systematically varie
 
 This repository contains the evaluation code for SynDORBench, a benchmark for studying LVLM perceptual robustness under DORI-calibrated, physically constrained camera imaging conditions. SynDORBench evaluates model performance across controlled variations in viewing distance, lighting, camera geometry, and action pose using rendered synthetic images.
 
+![Samples](imgs/samples.gif)
+
+Figure 2. Sample images from SynDORBench.
+
+
 
 
 # Installation
