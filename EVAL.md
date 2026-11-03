@@ -34,3 +34,46 @@
 
 
 If you want to evaluate your own models, you need to wrap your models in a class, following the style of models in [eval/models](eval/models). For e.g., [eval/models/gemma3n.py](eval/models/gemma3.py) 
+---
+
+## Action-MCQ evaluation (8-way action recognition)
+
+The action-MCQ task scores models on an 8-way multiple-choice action-recognition
+question per frame. Unlike the generative tasks above, it does **not** parse free
+text: each model does a single forward pass and we take a softmax over just the
+8 option-letter token ids (A–H) at the answer position — argmax is the prediction
+(`score_options()`, see [eval/models/mcq_utils.py](eval/models/mcq_utils.py)).
+
+The **primary metric is macro-F1, not accuracy**. Near-chance accuracy can hide a
+majority-class prediction collapse (a model predicting one letter most of the
+time); macro-F1, the reported prediction-letter entropy (bits), and the 8×8
+confusion matrix all surface that collapse. See
+[eval/metrics/mcq.py](eval/metrics/mcq.py).
+
+### Running it
+
+1. Use the action-MCQ orchestration config:
+   [configs/action_mcq_evaluation_config.yaml](configs/action_mcq_evaluation_config.yaml).
+   Set `dataset_root` to where SynDORBench is placed (its `index/action_mcq/{day,night,nv}.jsonl`
+   files hold `prompt`, `options`, `gt_letter`, and `radius`).
+2. Activate the env and export `WANDB_API_KEY` as above.
+3. Run:
+   ```
+   python -m eval.run_all_gpus --eval_config configs/action_mcq_evaluation_config.yaml
+   ```
+   The orchestrator detects `action_mcq` datasets and routes each shard through the
+   `score_options()` path (`--mcq`) instead of the generative `predict()` path.
+4. Per-model predictions (`{"img_path","pred_letter","probs"}`) land under
+   `results_action_mcq/...`; the `action_mcq` / `action_mcq_by_radius` metrics
+   (macro-F1, accuracy, prediction entropy, confusion, and per-DORI-radius
+   breakdowns) are written to the evaluation summary CSV.
+
+### Adding a model to the MCQ fleet
+
+Only adapters that implement `score_options()` can run the MCQ task. `qwen2.5-vl`
+(3b/7b) is wired and smoke-tested; other adapters raise `NotImplementedError`
+until their per-model override is added. For a `processor.apply_chat_template`
+adapter you can delegate to `score_options_via_chat_template(...)` in
+[eval/models/mcq_utils.py](eval/models/mcq_utils.py) (match `image_key` to the
+adapter's own image content-block key); adapters with bespoke input pipelines
+(e.g. `llavaction.py`) need an inline implementation mirroring their `generate()`.

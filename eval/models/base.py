@@ -25,7 +25,7 @@ class ModelConfig:
     load_in_4bit: bool = False
 
     # --- dynamic attributes depending on model ---
-    
+
     extra_args: Dict[str, Any] = field(default_factory=dict)
 
 
@@ -89,6 +89,24 @@ class BaseModel(nn.Module):
 
     def predict(self, img_path: str, prompt: str):
         raise NotImplementedError("Subclasses must implement predict().")
+
+    def score_options(self, img_path: str, prompt: str, option_letters):
+        """
+        Action-MCQ contract: single forward pass, softmax restricted to the
+        option-letter token ids at the answer position, argmax = prediction.
+        Returns (pred_letter, probs) where probs is aligned to option_letters
+        order. No generation, no text-parse fallback.
+
+        See eval/models/mcq_utils.py for a reusable chat-template-based
+        implementation; each adapter must override this explicitly (and be
+        smoke-tested against its real checkpoint) because input construction
+        is not uniform across adapters.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__} does not implement score_options(); "
+            f"action_mcq evaluation is unavailable for this model. See "
+            f"eval/models/mcq_utils.py for the chat-template helper."
+        )
 
     def __call__(self, video_path: str, prompt: str):
         return self.predict(video_path, prompt)

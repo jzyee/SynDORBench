@@ -1,0 +1,70 @@
+# configs/action_mcq_evaluation_config.yaml
+#
+# Action-MCQ (8-way, softmax letter-logit scoring) evaluation config.
+# Mirrors the structure of configs/evaluation_config.yaml, but every dataset
+# entry uses the `action_mcq` metrics, which route the orchestrator to the
+# score_options() path (single forward pass, no generation) instead of
+# model.predict(). See eval/metrics/mcq.py and eval/inference/inference_mcq.py.
+#
+# Primary metric is macro_f1, not accuracy -- near-chance accuracy can mask a
+# majority-class prediction collapse; macro-F1 and the reported
+# prediction-letter entropy surface it. See eval/metrics/mcq.py.
+#
+# NOTE: only adapters that implement score_options() can run here. qwen2.5-vl
+# (3b/7b) is wired and smoke-tested; other adapters raise NotImplementedError
+# until their per-model score_options() override is added (see
+# eval/models/mcq_utils.py for the chat-template helper). The fuller fleet list
+# is kept below, commented, for parity with the dev config.
+
+wandb_project: SynDORBench
+wandb_run_name: action_mcq_eval
+dataset_root: /path/to/SynDORBench   # e.g. /mnt/.../SynDORBench
+output_root: ./results_action_mcq
+redo: false
+
+# DORI radii (meters) used by the *_by_radius metrics.
+radii: [5.4, 10.8, 23.0]
+
+GPUs: [0]
+
+models:
+  - name: qwen2.5-vl-7b
+    config: ./configs/qwen2-5-vl-7b_config.yaml
+  - name: qwen2.5-vl-3b
+    config: ./configs/qwen2-5-vl-3b_config.yaml
+  # --- Below need a per-model score_options() override before they can run ---
+  # - name: internvl3-8B
+  #   config: ./configs/internvl3-8b_config.yaml
+  # - name: internvl3-1B
+  #   config: ./configs/internvl3-1b_config.yaml
+  # - name: gemma3-4B
+  #   config: ./configs/gemma3-4b-it_config.yaml
+  # - name: phi4-multimodal-instruct
+  #   config: ./configs/phi4-multimodal-instruct_config.yaml
+  # - name: molmo-7b-d-0924
+  #   config: ./configs/molmo_config.yaml
+  # - name: perception-LM-3B
+  #   config: ./configs/perception-LM-3B_config.yaml
+  # - name: smolVLM2-2.2B
+  #   config: ./configs/smolvlm2-2.2b-it_config.yaml
+  # - name: llava_next_video
+  #   config: ./configs/llava_next_video_config.yaml
+  # - name: llavaction
+  #   config: ./configs/llavaction_config.yaml
+  # - name: gpt-4o-mini-2024-07-18
+  #   config: ./configs/gpt-4o-mini-2024-07-18_config.yaml
+
+datasets:
+  - name: action_mcq_day
+    path: index/action_mcq/day.jsonl
+    metrics: [action_mcq, action_mcq_by_radius]
+
+  - name: action_mcq_night
+    path: index/action_mcq/night.jsonl
+    metrics: [action_mcq, action_mcq_by_radius]
+
+  - name: action_mcq_nv
+    path: index/action_mcq/nv.jsonl
+    metrics: [action_mcq, action_mcq_by_radius]
+
+dataset_limit: -1 # set to -1 for no limit

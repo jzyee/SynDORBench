@@ -8,6 +8,7 @@ This class integrates Qwen2.5-VL-7B-Instruct into the SynDORBench evaluation fra
 """
 
 from eval.models.base import BaseModel
+from eval.models.mcq_utils import letter_token_ids
 from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration
 from qwen_vl_utils import process_vision_info
 import torch
@@ -122,3 +123,51 @@ class Qwen2_5_VL(BaseModel):
         Standardized SynDORBench entry point for model inference.
         """
         return self.generate(img_path, prompt)
+
+    # ------------------------------------------------------------
+    # Action-MCQ scoring (single forward pass, letter-logit softmax)
+    # ------------------------------------------------------------
+    @torch.inference_mode()
+    def score_options(self, img_path: str, prompt: str, option_letters):
+        """
+        8-way action-MCQ scorer. Reuses this adapter's own generate() input
+        construction (apply_chat_template + process_vision_info), then reads
+        the last-position logits restricted to the option-letter token ids.
+        Returns (pred_letter, probs) with probs aligned to option_letters.
+
+        Implemented inline (rather than via score_options_via_chat_template)
+        because Qwen2.5-VL needs process_vision_info() to materialize the
+        pixel inputs -- the generic helper's text-only apply_chat_template
+        path does not fetch the image.
+        """
+        messages = [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "image", "image": str(img_path)},
+                    {"type": "text", "text": prompt},
+                ],
+            }
+        ]
+        text = self.processor.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+        )
+        image_inputs, video_inputs = process_vision_info(messages)
+        inputs = self.processor(
+            text=[text],
+            images=image_inputs,
+            videos=video_inputs,
+            padding=True,
+            return_tensors="pt",
+        ).to(self.model.device)
+
+        option_ids = letter_token_ids(self.processor.tokenizer, option_letters)
+
+        outputs = self.model(**inputs)
+        last_logits = outputs.logits[:, -1, :].squeeze(0)
+        option_logits = last_logits[option_ids].float()
+        probs = torch.softmax(option_logits, dim=-1).tolist()
+        pred_letter = option_letters[int(torch.argmax(option_logits).item())]
+        return pred_letter, probs

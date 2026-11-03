@@ -4,9 +4,9 @@
 # This script automates benchmark evaluation across:
 #   • Multiple vision-language models (e.g., LLaVAction, InternVL3, etc.)
 #   • Multiple dataset splits (e.g., day, night, nv)
-#   • Multiple metrics (e.g., accuracy, F1, BLEU)
+#   • Multiple metrics (e.g., accuracy, F1, BLEU, action_mcq)
 #
-# It calls `eval/run_eval.py` for each model–dataset pair,
+# It calls `eval/run_eval_gpus.py` for each model–dataset pair,
 # aggregates the outputs, computes metrics, and generates
 # a summary CSV suitable for leaderboard reporting.
 # ============================================================
@@ -81,27 +81,30 @@ def main(eval_config_path: str):
         model_cfg_path = model_entry["config"]
 
         for dataset_entry in eval_cfg["datasets"]:
-            
-            
+
+
 
             dataset_name = dataset_entry["name"]
             dataset_path = dataset_entry["path"]
+            # Action-MCQ datasets score via model.score_options() (logit probe),
+            # not model.predict(); flag the per-shard runner accordingly.
+            is_mcq = dataset_name.startswith("action_mcq") or ("action_mcq" in str(dataset_path))
             inference_output_path = output_root / f"{dataset_root_name}_inference" / f"{model_name}" /f"{model_name}_{dataset_name}.jsonl"
             (output_root / f"{dataset_root_name}_inference" / f"{model_name}").mkdir(parents=True, exist_ok=True)
             print(f"\n🚀 Evaluating {model_name} on {dataset_name}...")
 
-            
+
             if inference_output_path.exists() and not redo:
                 logger.info(f"Skipping inference for {model_name} on {dataset_name} as output already exists at {inference_output_path} and redo is False.")
                 # jump to metrics calculation
                 pass
-                
+
 
             else:
                 # ----------------------------------------------------
                 # Calculating the sharding for each gpu
                 # ----------------------------------------------------
-                
+
                 # ensure as close as possible even distribution of datasets across GPUs
                 dataset_len = len(open(Path(dataset_root) / dataset_path, 'r').readlines())
 
@@ -120,7 +123,7 @@ def main(eval_config_path: str):
                     gpu_shard_dict[gpu] = {'start_idx': start, 'end_idx': end}
                     start = end
 
-                
+
                 processes = []
 
                 for gpu in GPUs:
@@ -129,7 +132,7 @@ def main(eval_config_path: str):
                     logger.info(f"save path: {gpu_shard_output_path}")
 
                     # ----------------------------------------------------
-                    # Run the model inference via run_eval.py
+                    # Run the model inference via run_eval_gpus.py
                     # ----------------------------------------------------
                     env = os.environ.copy()
                     env["CUDA_VISIBLE_DEVICES"] = str(gpu)
@@ -145,9 +148,10 @@ def main(eval_config_path: str):
                         "--start_idx", str(gpu_shard_dict[gpu]['start_idx']),
                         "--end_idx", str(gpu_shard_dict[gpu]['end_idx']),
                         "--gpu_id", str(gpu),
+                        *(["--mcq"] if is_mcq else []),
                         *(["--redo"] if redo else [])
                     ], env=env)
-                    
+
                     processes.append(p)
 
                 for p in processes:
@@ -182,8 +186,8 @@ def main(eval_config_path: str):
             # ----------------------------------------------------
             # Compute metrics defined in evaluation config
             # ----------------------------------------------------
-            
-            
+
+
             for metric_name in dataset_entry['metrics']:
                 try:
                     metric_fn = get_metric_function(metric_name)
@@ -205,7 +209,7 @@ def main(eval_config_path: str):
                     logging.warning(f"⚠️ Metric '{metric_name}' failed: {e}")
                     record[metric_name] = None
 
-                
+
 
             summary_records.append(record)
 
@@ -237,17 +241,17 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    
+
     with open(args.eval_config, "r") as f:
         eval_cfg = yaml.safe_load(f)
-    
-    
+
+
     # ------------------------------------------------------------
     # Initialize WandB run
     # ------------------------------------------------------------
-    
+
     wandb.login(key=os.environ["WANDB_API_KEY"], relogin=True)
-    
+
     wandb.init(
         project=eval_cfg.get("wandb_project", "SynDORBench"),
         name=eval_cfg.get("wandb_run_name", f"eval_orchestrator"),
@@ -255,7 +259,7 @@ if __name__ == "__main__":
         reinit=True,
     )
 
-    
+
 
     # Execute main evaluation loop
     main(args.eval_config)

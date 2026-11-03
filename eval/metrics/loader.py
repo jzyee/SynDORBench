@@ -12,6 +12,7 @@ from eval.metrics.classification import compute_classification_metrics, compute_
 from eval.metrics.rouge import compute_rouge_l
 from eval.metrics.bert_score import compute_bertscore, compute_bertscore_by_radius
 from eval.metrics.e5_score import compute_e5score, compute_e5score_by_radius
+from eval.metrics.mcq import compute_mcq_metrics, compute_mcq_metrics_by_radius
 # from eval.metrics.dori_metrics import compute_dori_score
 
 
@@ -22,7 +23,7 @@ def get_metric_function(name: str):
     Parameters
     ----------
     name : str
-        Name of the metric (e.g., 'accuracy', 'classification', 'dori').
+        Name of the metric (e.g., 'accuracy', 'classification', 'action_mcq').
 
     Returns
     -------
@@ -35,7 +36,7 @@ def get_metric_function(name: str):
     # for classification metrics
     if name in ["accuracy", "acc"]:
         return compute_accuracy
-    
+
     elif name in ['dori_accuracy', 'dori_accuracy']:
         return compute_accuracy_by_radius
 
@@ -45,10 +46,17 @@ def get_metric_function(name: str):
     elif name in ["classification_by_radius"]:
         return compute_classification_metrics_by_radius
 
+    # for 8-way action-MCQ (softmax letter-logit scoring; macro-F1 primary)
+    elif name in ["action_mcq", "mcq"]:
+        return compute_mcq_metrics
+
+    elif name in ["action_mcq_by_radius", "mcq_by_radius"]:
+        return compute_mcq_metrics_by_radius
+
     # for sentiment similarity metrics
     elif name in ["rouge_l"]:
         return compute_rouge_l
-    
+
     elif name in ["bert_score", "bertscore"]:
         return compute_bertscore
     elif name in ["bert_score_by_radius", "bertscore_by_radius"]:
@@ -57,13 +65,13 @@ def get_metric_function(name: str):
         return compute_e5score
     elif name in ["e5_score_by_radius", "e5score_by_radius"]:
         return compute_e5score_by_radius
-    
-    
+
+
     # elif name in ["dori", "dori_score"]:
     #     return compute_dori_score
 
     else:
         raise ValueError(
             f"❌ Unknown metric '{name}'. "
-            f"Available metrics: ['accuracy', 'classification', 'dori']"
+            f"Available metrics: ['accuracy', 'classification', 'action_mcq', 'dori']"
         )

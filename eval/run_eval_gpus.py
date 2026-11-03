@@ -1,10 +1,11 @@
-# eval/run_eval.py
+# eval/run_eval_gpus.py
 import argparse
 import yaml
 import pandas as pd
 from pathlib import Path
 from eval.models import get_model_class
 from eval.inference.inference_shard import get_inferences
+from eval.inference.inference_mcq import get_inferences_mcq
 from eval.models.base import ModelConfig
 import warnings
 import torch
@@ -27,7 +28,11 @@ def main():
     parser.add_argument("--end_idx", type=int, default=None, help="End index for sharding dataset")
     parser.add_argument("--gpu_id", type=int, default=0, help="GPU ID to use for this process")
     parser.add_argument("--redo", type=bool, help="Redo inference even if predictions exist")
-    
+    parser.add_argument("--mcq", action="store_true",
+                        help="Score via model.score_options() (8-way action-MCQ logit probe) "
+                             "instead of model.predict(). Auto-enabled when the dataset path "
+                             "contains 'action_mcq'.")
+
     args = parser.parse_args()
 
     # --- Load config ---
@@ -41,10 +46,14 @@ def main():
     save_path = Path(args.save_path or cfg["output"]["save_path"])
     save_path.parent.mkdir(parents=True, exist_ok=True)
 
+    # Action-MCQ uses a separate scoring path (score_options, no generation).
+    is_mcq = args.mcq or ("action_mcq" in str(dataset_path))
+
     print(f"🔧 Model: {model_cfg.model_name} ({model_cfg.model_path})")
     print(f"📁 Dataset: {abs_dataset_path} (limit={args.dataset_limit})")
     print(f"💾 Save to: {save_path}")
     print(f"🧪 Device: {model_cfg.device} | dtype: {model_cfg.dtype} | seed: {model_cfg.seed}")
+    print(f"🎯 Mode: {'action-MCQ (score_options)' if is_mcq else 'generation (predict)'}")
 
 
     model_cfg.device_map = f"cuda:{0}"
@@ -53,19 +62,29 @@ def main():
     model_class = get_model_class(model_cfg.name)
     model = model_class(model_cfg)
 
-    
+
 
     # --- Run inference ---
-    results_df = get_inferences(model, 
-                                input_path=abs_dataset_path, 
-                                root_dir=dataset_root, 
-                                limit=args.dataset_limit, 
-                                output_path=save_path, 
-                                redo=args.redo,
-                                # device=model_cfg.device,
-                                start_idx=args.start_idx,
-                                end_idx=args.end_idx)
-    
+    if is_mcq:
+        results_df = get_inferences_mcq(model,
+                                        input_path=abs_dataset_path,
+                                        root_dir=dataset_root,
+                                        limit=args.dataset_limit,
+                                        output_path=save_path,
+                                        redo=args.redo,
+                                        start_idx=args.start_idx,
+                                        end_idx=args.end_idx)
+    else:
+        results_df = get_inferences(model,
+                                    input_path=abs_dataset_path,
+                                    root_dir=dataset_root,
+                                    limit=args.dataset_limit,
+                                    output_path=save_path,
+                                    redo=args.redo,
+                                    # device=model_cfg.device,
+                                    start_idx=args.start_idx,
+                                    end_idx=args.end_idx)
+
 
     print(f"\n✅ Inference complete. Saved to: {save_path}")
 
