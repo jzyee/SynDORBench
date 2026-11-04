@@ -16,16 +16,43 @@ eval/inference/inference_mcq.py and merges them against the reference
 index (which carries "gt_letter", "options", and optionally "radius") on
 img_path -- mirroring the merge-on-img_path convention used by every other
 metric in this package (accuracy.py, classification.py, ...).
+
+#21998: options are shuffled per question, so a letter (A-H) does not refer
+to the same action across rows. Accuracy is invariant to this (gt_letter and
+pred_letter are resolved through the SAME row's options list, so the letter
+and action comparisons are bijective and numerically identical) -- but
+macro-F1/entropy/confusion are NOT, since they average per-class. All three
+are therefore computed in ACTION space (resolving letter -> options[idx]
+per row) to match the paper's action-recognition macro-F1; accuracy stays
+on letters, unchanged.
 """
 import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
 LETTERS = list("ABCDEFGH")
+ACTIONS = ["sneak", "dodging", "choking", "kicking", "cover face with hands",
+           "stepping over something", "walking", "guard up"]
 
 
-def _prediction_entropy(pred_series, letters=LETTERS):
-    """Dataset-level categorical entropy (bits) of the predicted-letter distribution."""
+def _letter_to_action(letter, options):
+    """Resolve a predicted/gt letter through this row's own (shuffled) options
+    list. Returns "<INVALID>" for an unparseable letter -- sklearn's labels=
+    restriction means it contributes a false-negative to the true class
+    without polluting any of the 8 real classes."""
+    if letter in LETTERS:
+        idx = LETTERS.index(letter)
+        if idx < len(options):
+            return options[idx]
+    return "<INVALID>"
+
+
+def _letters_to_actions(letters, options_list):
+    return [_letter_to_action(l, opts) for l, opts in zip(letters, options_list)]
+
+
+def _prediction_entropy(pred_series, letters=ACTIONS):
+    """Dataset-level categorical entropy (bits) of the predicted-class distribution."""
     counts = pred_series.value_counts().reindex(letters, fill_value=0)
     total = counts.sum()
     if total == 0:
@@ -34,19 +61,25 @@ def _prediction_entropy(pred_series, letters=LETTERS):
     return float(-(probs * np.log2(probs)).sum())
 
 
-def _confusion_8x8(y_true, y_pred, letters=LETTERS):
+def _confusion_8x8(y_true, y_pred, letters=ACTIONS):
     return confusion_matrix(y_true, y_pred, labels=letters).tolist()
 
 
-def _report(y_true, y_pred, letters=LETTERS):
+def _report(y_true, y_pred, letters=ACTIONS):
     return classification_report(y_true, y_pred, labels=letters, output_dict=True, zero_division=0)
 
 
 def compute_mcq_metrics(pred_path, ref_path, key_pred="pred_letter", key_ref="gt_letter", rounding=False):
     """
     Compute macro-F1 (primary), accuracy, dataset-level categorical
-    prediction-letter entropy, and an 8x8 confusion matrix for the 8-way
+    prediction entropy, and an 8x8 confusion matrix for the 8-way
     action-MCQ task.
+
+    macro-F1/entropy/confusion are computed in ACTION space (#21998):
+    pred_letter/gt_letter are resolved through each row's own "options" list
+    before scoring, since options are shuffled per question and a bare
+    letter does not identify a consistent class across rows. Accuracy stays
+    letter-based -- identical value either way (bijective per row).
 
     Unlike eval/metrics/classification.py's normalize_to_label(), pred_letter
     comes straight out of score_options()'s argmax over exactly the 8 valid
@@ -56,14 +89,14 @@ def compute_mcq_metrics(pred_path, ref_path, key_pred="pred_letter", key_ref="gt
     ref_df = pd.read_json(ref_path, lines=True)
 
     if pred_df.empty or ref_df.empty:
-        merged = pd.DataFrame(columns=[key_ref, key_pred])
+        merged = pd.DataFrame(columns=[key_ref, key_pred, "options"])
     else:
         merged = pd.merge(pred_df, ref_df, on="img_path", suffixes=("_pred", "_ref"))
 
-    y_true = merged[key_ref].tolist() if key_ref in merged else []
-    y_pred = merged[key_pred].tolist() if key_pred in merged else []
+    y_true_letter = merged[key_ref].tolist() if key_ref in merged else []
+    y_pred_letter = merged[key_pred].tolist() if key_pred in merged else []
 
-    if len(y_true) == 0 or len(y_pred) == 0:
+    if len(y_true_letter) == 0 or len(y_pred_letter) == 0:
         return {
             "macro_f1": 0.0,
             "accuracy": 0.0,
@@ -71,9 +104,13 @@ def compute_mcq_metrics(pred_path, ref_path, key_pred="pred_letter", key_ref="gt
             "confusion_8x8": _confusion_8x8([], []),
         }
 
+    options_list = merged["options"].tolist()
+    y_true = _letters_to_actions(y_true_letter, options_list)
+    y_pred = _letters_to_actions(y_pred_letter, options_list)
+
     report = _report(y_true, y_pred)
-    acc = accuracy_score(y_true, y_pred)
-    entropy_H = _prediction_entropy(merged[key_pred])
+    acc = accuracy_score(y_true_letter, y_pred_letter)
+    entropy_H = _prediction_entropy(pd.Series(y_pred))
     confusion = _confusion_8x8(y_true, y_pred)
 
     if rounding:
@@ -103,6 +140,7 @@ def compute_mcq_metrics_by_radius(
     """
     Per-radius variant of compute_mcq_metrics, flattened like
     classification.py's compute_classification_metrics_by_radius.
+    Same ACTION-space scoring as compute_mcq_metrics (#21998).
 
     Example output:
     {
@@ -154,11 +192,15 @@ def compute_mcq_metrics_by_radius(
             })
             continue
 
-        y_true = subset[key_ref].tolist()
-        y_pred = subset[key_pred].tolist()
+        y_true_letter = subset[key_ref].tolist()
+        y_pred_letter = subset[key_pred].tolist()
+        options_list = subset["options"].tolist()
+        y_true = _letters_to_actions(y_true_letter, options_list)
+        y_pred = _letters_to_actions(y_pred_letter, options_list)
+
         report = _report(y_true, y_pred)
-        acc = accuracy_score(y_true, y_pred)
-        entropy_H = _prediction_entropy(subset[key_pred])
+        acc = accuracy_score(y_true_letter, y_pred_letter)
+        entropy_H = _prediction_entropy(pd.Series(y_pred))
         confusion = _confusion_8x8(y_true, y_pred)
 
         if rounding:
