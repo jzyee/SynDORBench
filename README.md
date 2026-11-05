@@ -41,7 +41,7 @@ Please refer to [EVAL.md](EVAL.md)
 
 # Licence and Usage
 
-This evaluation code is released under CC BY-NC-SA 4.0 for non-commercial academic research and reviewer inspection.
+This evaluation code is released under CC BY-NC-SA 4.0 for non-commercial academic research.
 
 The code is intended to evaluate SynDORBench rendered images, annotations, and metadata. It does not include SMPL-X model files, AMASS motion files, BABEL source annotations, SMPLitex assets, or other upstream generation assets.
 
