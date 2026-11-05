@@ -106,6 +106,32 @@ class Molmo(BaseModel):
 
         return generated_text
 
+    @torch.inference_mode()
+    def score_options(self, img_path, prompt, option_letters):
+        """A-only MCQ scoring: mirrors generate()'s Molmo input construction
+        (processor.process(...)) exactly, but swaps generate_from_batch()
+        for a direct forward pass and reads logits restricted to
+        option_letters at the answer position."""
+        from eval.models.mcq_utils import letter_token_ids
+
+        img_path = str(img_path)
+        if img_path.startswith("http://") or img_path.startswith("https://"):
+            image = Image.open(requests.get(img_path, stream=True).raw).convert("RGB")
+        else:
+            image = Image.open(img_path).convert("RGB")
+
+        inputs = self.processor.process(images=[image], text=prompt)
+        inputs = {k: v.to(self.model.device).unsqueeze(0) for k, v in inputs.items()}
+
+        option_ids = letter_token_ids(self.processor.tokenizer, option_letters)
+
+        outputs = self.model(**inputs)
+        last_logits = outputs.logits[:, -1, :].squeeze(0)
+        option_logits = last_logits[option_ids].float()
+        probs = torch.softmax(option_logits, dim=-1).tolist()
+        pred_letter = option_letters[int(torch.argmax(option_logits).item())]
+        return pred_letter, probs
+
     # ------------------------------------------------------------
     # Predict (SynDORBench entry point)
     # ------------------------------------------------------------

@@ -113,6 +113,40 @@ class Phi4(BaseModel):
 
         return response
 
+    @torch.inference_mode()
+    def score_options(self, img_path, prompt, option_letters):
+        """A-only MCQ scoring: mirrors generate()'s Phi-4 prompt/image
+        construction exactly, but swaps model.generate() for a direct
+        forward pass and reads logits restricted to option_letters at the
+        answer position (single forward pass, softmax over just those
+        tokens, argmax)."""
+        from eval.models.mcq_utils import letter_token_ids
+
+        user_prompt = '<|user|>'
+        assistant_prompt = '<|assistant|>'
+        prompt_suffix = '<|end|>'
+        full_prompt = f"{user_prompt}<|image_1|>{prompt}{prompt_suffix}{assistant_prompt}"
+
+        if str(img_path).startswith("http://") or str(img_path).startswith("https://"):
+            image = Image.open(requests.get(img_path, stream=True).raw).convert("RGB")
+        else:
+            image = Image.open(img_path).convert("RGB")
+
+        inputs = self.processor(
+            text=full_prompt,
+            images=image,
+            return_tensors="pt",
+        ).to(self.model.device)
+
+        option_ids = letter_token_ids(self.processor.tokenizer, option_letters)
+
+        outputs = self.model(**inputs)
+        last_logits = outputs.logits[:, -1, :].squeeze(0)
+        option_logits = last_logits[option_ids].float()
+        probs = torch.softmax(option_logits, dim=-1).tolist()
+        pred_letter = option_letters[int(torch.argmax(option_logits).item())]
+        return pred_letter, probs
+
     # ------------------------------------------------------------
     # Predict (SynDORBench entry point)
     # ------------------------------------------------------------

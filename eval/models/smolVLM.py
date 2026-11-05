@@ -92,6 +92,16 @@ class SmolVLM(BaseModel):
 
         return decoded_output
 
+    def score_options(self, img_path, prompt, option_letters):
+        """A-only MCQ scoring: single forward pass, softmax restricted to
+        option_letters' logits at the answer position. See
+        eval/models/mcq_utils.py for the shared implementation."""
+        from eval.models.mcq_utils import score_options_via_chat_template
+        return score_options_via_chat_template(
+            self.model, self.processor, img_path, prompt, option_letters,
+            device=self.model.device, image_key="url",
+        )
+
     # ------------------------------------------------------------
     # Predict (standardized entry point)
     # ------------------------------------------------------------

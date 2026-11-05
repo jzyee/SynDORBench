@@ -100,7 +100,54 @@ class LLavaAction(BaseModel):
         text_outputs = self.tokenizer.batch_decode(cont, skip_special_tokens=True)[0].strip()
 
         return text_outputs
-    
+
+    @torch.inference_mode()
+    def score_options(self, img_path, prompt, option_letters):
+        """A-only MCQ scoring: mirrors generate()'s conv-template + custom
+        tokenizer_image_token input construction exactly (same
+        time_instruction/perspective_prompt scaffolding wrapping the real
+        task_prompt, same conv_template, same image preprocessing), but
+        swaps model.generate() for a direct forward pass and reads logits
+        restricted to option_letters at the answer position. No
+        processor.apply_chat_template exists for this adapter -- this is a
+        genuinely bespoke path, not a reuse of mcq_utils'
+        score_options_via_chat_template."""
+        from eval.models.mcq_utils import letter_token_ids
+
+        image = self.process_image_path(img_path)
+
+        conv_template = "qwen_2"
+        time_instruction = f"The video lasts for {0:.2f} seconds, and 1 frame from it."
+        perspective_prompt = "You are seeing this video from a camera view and you are the captioning system."
+        task_prompt = prompt.strip()
+        base_text = f"\n{time_instruction}\n{perspective_prompt} {task_prompt}"
+
+        if DEFAULT_IMAGE_TOKEN in base_text:
+            question = base_text
+        else:
+            question = DEFAULT_IMAGE_TOKEN + base_text
+
+        conv = copy.deepcopy(conv_templates[conv_template])
+        conv.append_message(conv.roles[0], question)
+        conv.append_message(conv.roles[1], None)
+        prompt_question = conv.get_prompt()
+        input_ids = tokenizer_image_token(
+            prompt_question, self.tokenizer, IMAGE_TOKEN_INDEX, return_tensors="pt"
+        ).unsqueeze(0).to(self.device)
+
+        option_ids = letter_token_ids(self.tokenizer, option_letters)
+
+        outputs = self.model(
+            input_ids,
+            images=image,
+            modalities=["video"],
+        )
+        last_logits = outputs.logits[:, -1, :].squeeze(0)
+        option_logits = last_logits[option_ids].float()
+        probs = torch.softmax(option_logits, dim=-1).tolist()
+        pred_letter = option_letters[int(torch.argmax(option_logits).item())]
+        return pred_letter, probs
+
     def predict(self, img_path, prompt=None):
         image = self.process_image_path(img_path)
         outputs = self.generate(image, prompt)

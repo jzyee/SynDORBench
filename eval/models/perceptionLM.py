@@ -87,6 +87,16 @@ class PerceptionLM(BaseModel):
         decoded_output = self.processor.batch_decode(output_ids, skip_special_tokens=True)[0]
         return decoded_output.strip()
 
+    def score_options(self, img_path, prompt, option_letters):
+        """A-only MCQ scoring: single forward pass, softmax restricted to
+        option_letters' logits at the answer position. See
+        eval/models/mcq_utils.py for the shared implementation."""
+        from eval.models.mcq_utils import score_options_via_chat_template
+        return score_options_via_chat_template(
+            self.model, self.processor, img_path, prompt, option_letters,
+            device=self.model.device, image_key="image",
+        )
+
     # ------------------------------------------------------------
     # Predict (SynDORBench standardized entry point)
     # ------------------------------------------------------------
