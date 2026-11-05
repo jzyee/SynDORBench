@@ -18,6 +18,7 @@ import mimetypes
 import os
 import io
 import time
+import math
 
 
 class OpenAI4oMini(BaseModel):
@@ -139,6 +140,79 @@ class OpenAI4oMini(BaseModel):
     # ------------------------------------------------------------
     def predict(self, img_path: str, prompt: str | None = None) -> str:
         return self.generate(img_path, prompt)
+
+    # ------------------------------------------------------------
+    # score_options (A-only MCQ scoring via Chat Completions logprobs)
+    # ------------------------------------------------------------
+    def score_options(self, img_path: str, prompt: str, option_letters):
+        """
+        A-only MCQ scoring. generate() uses client.responses.create(), which
+        does not reliably expose per-token logprobs -- this uses
+        client.chat.completions.create() with logprobs=True/top_logprobs=20
+        instead (the Chat Completions API's documented mechanism for reading
+        logprobs), per the project's "softmax over option-letter logits"
+        scoring policy.
+
+        The API only returns the top-20 logprobs at a position (not the
+        full vocab), so any option letter absent from that top-20 gets a
+        fixed floor logprob rather than being silently dropped or guessed
+        at by parsing generated text -- the relative ranking among the 8
+        options from whichever letters DO appear is still well-defined,
+        mirroring how mcq_utils.score_options_via_chat_template restricts
+        softmax to just the 8 option tokens for the local-weight models.
+        """
+        image_data_uri = self.encode_image(img_path)
+        backoff = self.initial_backoff
+        FLOOR_LOGPROB = -100.0
+
+        for attempt in range(1, self.max_retries + 1):
+            try:
+                response = self.client.chat.completions.create(
+                    model=self.model_path,
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": [
+                                {"type": "text", "text": prompt},
+                                {"type": "image_url", "image_url": {"url": image_data_uri}},
+                            ],
+                        }
+                    ],
+                    max_tokens=1,
+                    logprobs=True,
+                    top_logprobs=20,
+                )
+
+                top = response.choices[0].logprobs.content[0].top_logprobs
+                letter_logprob = {entry.token.strip(): entry.logprob for entry in top}
+                logprobs = [letter_logprob.get(letter, FLOOR_LOGPROB) for letter in option_letters]
+
+                max_lp = max(logprobs)
+                exps = [math.exp(lp - max_lp) for lp in logprobs]
+                total = sum(exps)
+                probs = [e / total for e in exps]
+                pred_letter = option_letters[probs.index(max(probs))]
+                return pred_letter, probs
+
+            except RateLimitError as e:
+                print(f"\u26a0\ufe0f Rate limit hit (attempt {attempt}/{self.max_retries}): {e}")
+                if attempt < self.max_retries:
+                    print(f"\u23f3 Waiting {backoff} s before retry...")
+                    time.sleep(backoff)
+                    backoff *= 2
+                else:
+                    print("\u274c Maximum retries reached. Aborting.")
+                    raise
+
+            except (APIError, InternalServerError) as e:
+                print(f"\u26a0\ufe0f API/server error (attempt {attempt}/{self.max_retries}): {e}")
+                if attempt < self.max_retries:
+                    print(f"\u23f3 Waiting {backoff} s before retry...")
+                    time.sleep(backoff)
+                    backoff *= 2
+                else:
+                    print("\u274c Maximum retries reached. Aborting.")
+                    raise
 
 
 # ============================================================
