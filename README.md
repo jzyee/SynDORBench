@@ -7,7 +7,7 @@
 
 
 ![Banner](imgs/SynDORBench%20banner.png)
-Figure 1. Conceptual overview of SynDORBench: The benchmark systematically varies physical visibility factors (lighting, scene type, camera azimuth/elevation, action pose) and DORI-calibrated viewing distance, evaluating models on two tasks: 1) binary human-presence classification and 2) open-ended action recognition.
+Figure 1. Conceptual overview of SynDORBench: The benchmark systematically varies physical visibility factors (lighting, scene type, camera azimuth/elevation, action pose) and DORI-calibrated viewing distance, evaluating models on two tasks: 1) binary human-presence classification and 2) action recognition (open-ended and MCQ).
 
 
 # Table of Contents <!-- omit in toc -->
